@@ -1,0 +1,167 @@
+<html><head><base href="https://websim.creation.engine/email-phone-extractor/" />
+<title>Email, Número de celular do Brasil e extrator de nome</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+    }
+    h1 {
+        color: #333;
+        text-align: center;
+    }
+    #inputArea {
+        width: 100%;
+        height: 200px;
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        resize: vertical;
+    }
+    button {
+        display: inline-block;
+        margin: 0 10px 20px 0;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    #results {
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 20px;
+        overflow-x: auto;
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+    <h1>Email, Número de celular do Brasil e extrator de nome</h1>
+    <textarea id="inputArea" placeholder="Paste your text here..."></textarea>
+    <button id="extractButton">Extrair informação</button>
+    <button id="copyButton" style="display: none;">Copiar</button>
+    <button id="downloadButton" style="display: none;">Download CSV</button>
+    <div id="results">
+        <table id="resultTable">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Número de celular</th>
+                    <th>Nome</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const inputArea = document.getElementById('inputArea');
+        const extractButton = document.getElementById('extractButton');
+        const copyButton = document.getElementById('copyButton');
+        const downloadButton = document.getElementById('downloadButton');
+        const resultTable = document.getElementById('resultTable').getElementsByTagName('tbody')[0];
+
+        extractButton.addEventListener('click', extractData);
+        copyButton.addEventListener('click', copyData);
+        downloadButton.addEventListener('click', downloadCSV);
+
+        function extractData() {
+            const inputText = inputArea.value;
+            resultTable.innerHTML = '';
+
+            const emailRegex = /\b[A-Za-z0-9._%+-]+@(icloud\.com|gmail\.com|hotmail\.com|yahoo\.com)\b/gi;
+            const phoneRegex = /(?:\+55\s?)?(?:\d{2}\s?)?\d{5}-?\d{4}/g;
+
+            const emails = inputText.match(emailRegex) || [];
+            const phones = inputText.match(phoneRegex) || [];
+
+            const maxLength = Math.max(emails.length, phones.length);
+
+            for (let i = 0; i < maxLength; i++) {
+                const row = resultTable.insertRow();
+                const emailCell = row.insertCell(0);
+                const phoneCell = row.insertCell(1);
+                const nameCell = row.insertCell(2);
+
+                const email = emails[i] || '';
+                emailCell.textContent = email;
+                phoneCell.textContent = phones[i] || '';
+                nameCell.textContent = generateNameFromEmail(email);
+            }
+
+            copyButton.style.display = 'inline-block';
+            downloadButton.style.display = 'inline-block';
+        }
+
+        function generateNameFromEmail(email) {
+            if (!email) return '';
+            const namePart = email.split('@')[0];
+            const words = namePart.split(/[._-]/);
+            return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        function copyData() {
+            let tabSeparatedData = '';
+            for (const row of resultTable.rows) {
+                const email = row.cells[0].textContent;
+                const phone = row.cells[1].textContent;
+                const name = row.cells[2].textContent;
+                tabSeparatedData += `${email}\t${phone}\t${name}\n`;
+            }
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = tabSeparatedData;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            alert('Data copied to clipboard (tab-separated)!');
+        }
+
+        function downloadCSV() {
+            let csv = 'Email,Phone Number,Generated Name\n';
+            for (const row of resultTable.rows) {
+                const email = row.cells[0].textContent;
+                const phone = row.cells[1].textContent;
+                const name = row.cells[2].textContent;
+                csv += `"${email}","${phone}","${name}"\n`;
+            }
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', 'extracted_data.csv');
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+</body>
+</html>
