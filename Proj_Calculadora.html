@@ -1,0 +1,324 @@
+<html><head><base href="https://calculator.example.com/" target="_blank">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculatrice Scientifique Avancée</title>
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #3494E6, #EC6EAD);
+  }
+  .calculator-container {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
+  .calculator {
+    width: 420px;
+    flex-shrink: 0;
+  }
+  #display {
+    width: 100%;
+    height: 60px;
+    margin-bottom: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 10px;
+    font-size: 24px;
+    color: white;
+    text-align: right;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+  }
+  button {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    transform: scale(1.05);
+  }
+  .number {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+  .operator {
+    background-color: rgba(236, 110, 173, 0.6);
+    color: white;
+  }
+  .function {
+    background-color: rgba(52, 148, 230, 0.6);
+    color: white;
+  }
+  .equal {
+    background-color: rgba(46, 204, 113, 0.6);
+    color: white;
+  }
+  .history {
+    width: 400px;
+    margin-left: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    padding: 10px;
+    color: white;
+    height: 500px;
+    overflow-y: auto;
+  }
+  .history h3 {
+    margin-top: 0;
+    text-align: center;
+    font-size: 18px;
+  }
+  .history ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  .history li {
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 8px;
+    cursor: pointer;
+  }
+  .history li:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  .history-expression {
+    color: #FFD700;
+    display: block;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .history-result {
+    color: #00FFFF;
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .operator-square {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    grid-column: span 2;
+    background-color: rgba(236, 110, 173, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .operator-square button {
+    height: 70px;
+    font-size: 24px;
+  }
+  .function-group {
+    grid-column: span 6;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    background-color: rgba(52, 148, 230, 0.3);
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  .number-pad {
+    grid-column: span 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 10px;
+  }
+  .clear {
+    background-color: rgba(231, 76, 60, 0.6);
+    color: white;
+  }
+  .operator-equal-group {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .operator-equal-group .equal {
+    grid-column: span 2;
+  }
+</style>
+</head>
+<body>
+  <div class="calculator-container">
+    <div class="calculator">
+      <input type="text" id="display" readonly>
+      <div class="buttons">
+        <div class="function-group">
+          <button class="function" onclick="addToDisplay('sin(')">sin</button>
+          <button class="function" onclick="addToDisplay('cos(')">cos</button>
+          <button class="function" onclick="addToDisplay('tan(')">tan</button>
+          <button class="function" onclick="addToDisplay('asin(')">asin</button>
+          <button class="function" onclick="addToDisplay('acos(')">acos</button>
+          <button class="function" onclick="addToDisplay('atan(')">atan</button>
+          <button class="function" onclick="addToDisplay('log(')">log</button>
+          <button class="function" onclick="addToDisplay('ln(')">ln</button>
+          <button class="function" onclick="addToDisplay('exp(')">exp</button>
+          <button class="function" onclick="addToDisplay('abs(')">abs</button>
+          <button class="function" onclick="addToDisplay('floor(')">floor</button>
+          <button class="function" onclick="addToDisplay('ceil(')">ceil</button>
+          <button class="function" onclick="addToDisplay('(')">(</button>
+          <button class="function" onclick="addToDisplay(')')">)</button>
+          <button class="function" onclick="addToDisplay('^')">^</button>
+          <button class="function" onclick="calculateSquareRoot()">√</button>
+          <button class="function" onclick="addToDisplay('!')">!</button>
+          <button class="function" onclick="addConstant('pi')">π</button>
+          <button class="function" onclick="addConstant('e')">e</button>
+          <button class="function" onclick="addToDisplay('deg')">deg</button>
+          <button class="function" onclick="addToDisplay('rad')">rad</button>
+          <button class="function" onclick="addToDisplay('mod')">mod</button>
+          <button class="function" onclick="addToDisplay('rand()')">rand</button>
+          <button class="function" onclick="addToDisplay('%')">%</button>
+        </div>
+
+        <div class="number-pad">
+          <button class="number" onclick="addNumber('7')">7</button>
+          <button class="number" onclick="addNumber('8')">8</button>
+          <button class="number" onclick="addNumber('9')">9</button>
+          <button class="number" onclick="addNumber('4')">4</button>
+          <button class="number" onclick="addNumber('5')">5</button>
+          <button class="number" onclick="addNumber('6')">6</button>
+          <button class="number" onclick="addNumber('1')">1</button>
+          <button class="number" onclick="addNumber('2')">2</button>
+          <button class="number" onclick="addNumber('3')">3</button>
+          <button class="number" onclick="addNumber('0')">0</button>
+          <button class="number" onclick="addToDisplay('.')">.</button>
+        </div>
+
+        <div class="operator-equal-group">
+          <div class="operator-square">
+            <button class="operator" onclick="addToDisplay('/')">/</button>
+            <button class="operator" onclick="addToDisplay('*')">*</button>
+            <button class="operator" onclick="addToDisplay('-')">-</button>
+            <button class="operator" onclick="addToDisplay('+')">+</button>
+          </div>
+          <button class="equal" onclick="calculate()">=</button>
+        </div>
+        
+        <button class="clear" onclick="clearDisplay()">C</button>
+      </div>
+    </div>
+    <div class="history">
+      <h3>Historique</h3>
+      <ul id="history-list"></ul>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.js"></script>
+  <script>
+    const display = document.getElementById('display');
+    const historyList = document.getElementById('history-list');
+    let history = [];
+    let lastOperation = false;
+
+    function addToDisplay(value) {
+      if (lastOperation && !isNaN(value)) {
+        clearDisplay();
+      }
+      display.value += value;
+      lastOperation = false;
+    }
+
+    function addNumber(number) {
+      if (lastOperation) {
+        clearDisplay();
+      }
+      display.value += number;
+      lastOperation = false;
+    }
+
+    function clearDisplay() {
+      display.value = '';
+      lastOperation = false;
+    }
+
+    function calculate() {
+      try {
+        const expression = display.value;
+        const result = math.evaluate(expression);
+        display.value = result;
+        addToHistory(expression, result);
+        lastOperation = true;
+      } catch (error) {
+        display.value = 'Error';
+        lastOperation = true;
+      }
+    }
+
+    function calculateSquareRoot() {
+      try {
+        const currentValue = math.evaluate(display.value);
+        const result = Math.sqrt(currentValue);
+        display.value = result;
+        addToHistory(`√(${currentValue})`, result);
+        lastOperation = true;
+      } catch (error) {
+        display.value = 'Error';
+        lastOperation = true;
+      }
+    }
+
+    function addToHistory(expression, result) {
+      history.unshift({ expression, result });
+      if (history.length > 15) {
+        history.pop();
+      }
+      updateHistoryDisplay();
+    }
+
+    function updateHistoryDisplay() {
+      historyList.innerHTML = '';
+      history.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="history-expression">${item.expression}</span><span class="history-result">${item.result}</span>`;
+        li.addEventListener('click', () => addHistoryResultToDisplay(item.result));
+        historyList.appendChild(li);
+      });
+    }
+
+    function addHistoryResultToDisplay(result) {
+      const currentValue = display.value;
+      if (currentValue === '' || currentValue === 'Error' || lastOperation) {
+        display.value = result;
+      } else {
+        const lastChar = currentValue[currentValue.length - 1];
+        if (!isNaN(lastChar) || lastChar === '.') {
+          display.value = result;
+        } else {
+          display.value += result;
+        }
+      }
+      lastOperation = false;
+    }
+
+    function addConstant(constant) {
+      const value = math[constant];
+      if (lastOperation) {
+        clearDisplay();
+      }
+      display.value += value.toFixed(10);
+      lastOperation = false;
+    }
+  </script>
+</body>
+</html>
