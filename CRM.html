@@ -1,0 +1,844 @@
+<html><head><base href="https://your-erp-crm-domain.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERP/CRM System</title>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+<style>
+  [v-cloak] {
+    display: none;
+  }
+  .v-navigation-drawer {
+    top: 64px !important;
+    max-height: calc(100% - 64px) !important;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+  <div id="app" v-cloak>
+    <v-app>
+      <v-app-bar app color="primary" dark>
+        <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
+        <v-toolbar-title>ERP/CRM System</v-toolbar-title>
+      </v-app-bar>
+
+      <v-navigation-drawer v-model="drawer" app>
+        <v-list dense nav>
+          <v-list-item v-for="item in menuItems" :key="item.title" link @click="currentTab = item.tab">
+            <v-list-item-icon>
+              <v-icon>{{ item.icon }}</v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>{{ item.title }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+
+      <v-main>
+        <v-container fluid>
+          <v-row>
+            <v-col cols="12">
+              <component :is="currentTabComponent"></component>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script>
+    Vue.component('tasks-tab', {
+      template: `
+        <div>
+          <h2>Tasks</h2>
+          <v-row>
+            <v-col cols="12" md="8">
+              <v-sheet height="600">
+                <v-calendar
+                  ref="calendar"
+                  v-model="value"
+                  :events="events"
+                  @click:event="showEvent"
+                  @click:more="viewDay"
+                  @click:date="viewDay"
+                  color="primary"
+                ></v-calendar>
+              </v-sheet>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-card>
+                <v-toolbar color="primary" dark>
+                  <v-toolbar-title>{{ selectedEvent ? (selectedEvent.name || 'New Event') : 'New Event' }}</v-toolbar-title>
+                </v-toolbar>
+                <v-card-text>
+                  <v-form @submit.prevent="saveEvent">
+                    <v-text-field v-model="newEvent.name" label="Event Name"></v-text-field>
+                    <v-menu
+                      v-model="startMenu"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                          v-model="newEvent.start"
+                          label="Start Date & Time"
+                          prepend-icon="mdi-calendar"
+                          readonly
+                          v-bind="attrs"
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker v-model="newEvent.start" @input="startMenu = false"></v-date-picker>
+                    </v-menu>
+                    <v-menu
+                      v-model="endMenu"
+                      :close-on-content-click="false"
+                      :nudge-right="40"
+                      transition="scale-transition"
+                      offset-y
+                      min-width="290px"
+                    >
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-text-field
+                          v-model="newEvent.end"
+                          label="End Date & Time"
+                          prepend-icon="mdi-calendar"
+                          readonly
+                          v-bind="attrs"
+                          v-on="on"
+                        ></v-text-field>
+                      </template>
+                      <v-date-picker v-model="newEvent.end" @input="endMenu = false"></v-date-picker>
+                    </v-menu>
+                    <v-select
+                      v-model="newEvent.color"
+                      :items="colors"
+                      label="Color"
+                      item-text="text"
+                      item-value="value"
+                    ></v-select>
+                    <v-btn type="submit" color="primary" class="mr-4">Save</v-btn>
+                    <v-btn v-if="selectedEvent" @click="deleteEvent" color="error">Delete</v-btn>
+                  </v-form>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+      `,
+      data() {
+        return {
+          value: '',
+          events: [],
+          colors: [
+            { text: 'Red', value: 'red' },
+            { text: 'Blue', value: 'blue' },
+            { text: 'Green', value: 'green' },
+          ],
+          newEvent: {
+            name: '',
+            start: new Date().toISOString().substr(0, 10),
+            end: new Date().toISOString().substr(0, 10),
+            color: 'blue',
+          },
+          selectedEvent: null,
+          startMenu: false,
+          endMenu: false,
+        }
+      },
+      methods: {
+        viewDay({ date }) {
+          this.value = date
+        },
+        showEvent({ nativeEvent, event }) {
+          this.selectedEvent = event
+          this.newEvent = { ...event }
+          nativeEvent.stopPropagation()
+        },
+        saveEvent() {
+          if (this.selectedEvent) {
+            const index = this.events.indexOf(this.selectedEvent)
+            this.events.splice(index, 1, this.newEvent)
+          } else {
+            this.events.push(this.newEvent)
+          }
+          this.selectedEvent = null
+          this.newEvent = {
+            name: '',
+            start: new Date().toISOString().substr(0, 10),
+            end: new Date().toISOString().substr(0, 10),
+            color: 'blue',
+          }
+        },
+        deleteEvent() {
+          const index = this.events.indexOf(this.selectedEvent)
+          this.events.splice(index, 1)
+          this.selectedEvent = null
+        },
+      },
+    })
+
+    Vue.component('clients-tab', {
+      template: `
+        <div>
+          <h2>Clients</h2>
+          <v-row>
+            <v-col cols="12" md="4">
+              <v-card>
+                <v-card-title>
+                  Client List
+                  <v-spacer></v-spacer>
+                  <v-text-field
+                    v-model="search"
+                    append-icon="mdi-magnify"
+                    label="Search"
+                    single-line
+                    hide-details
+                  ></v-text-field>
+                </v-card-title>
+                <v-list>
+                  <v-list-item-group v-model="selectedClient" color="primary">
+                    <v-list-item
+                      v-for="(client, index) in filteredClients"
+                      :key="index"
+                      @click="selectClient(client)"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title v-text="client.name"></v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list-item-group>
+                </v-list>
+              </v-card>
+              <v-btn color="primary" @click="newClient" class="mt-4">Add New Client</v-btn>
+            </v-col>
+            <v-col cols="12" md="8">
+              <v-card v-if="currentClient">
+                <v-card-title>
+                  {{ currentClient.name }}
+                  <v-spacer></v-spacer>
+                  <v-btn icon @click="deleteClient"><v-icon>mdi-delete</v-icon></v-btn>
+                </v-card-title>
+                <v-card-text>
+                  <v-form @submit.prevent="saveClient">
+                    <v-text-field v-model="currentClient.name" label="Name"></v-text-field>
+                    <v-text-field v-model="currentClient.email" label="Email"></v-text-field>
+                    <v-text-field v-model="currentClient.phone" label="Phone"></v-text-field>
+                    <v-textarea v-model="currentClient.address" label="Address"></v-textarea>
+                    <v-text-field v-model="currentClient.company" label="Company"></v-text-field>
+                    
+                    <h3>Phases</h3>
+                    <v-chip-group column>
+                      <v-chip
+                        v-for="(phase, index) in currentClient.phases"
+                        :key="index"
+                        close
+                        @click:close="removePhase(index)"
+                      >
+                        {{ phase }}
+                      </v-chip>
+                    </v-chip-group>
+                    <v-text-field v-model="newPhase" label="New Phase" @keyup.enter="addPhase"></v-text-field>
+                    
+                    <h3>Reports</h3>
+                    <v-list>
+                      <v-list-item v-for="(report, index) in currentClient.reports" :key="index">
+                        <v-list-item-content>
+                          <v-list-item-title>{{ report.title }}</v-list-item-title>
+                          <v-list-item-subtitle>{{ report.date }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-list-item-action>
+                          <v-btn icon @click="removeReport(index)"><v-icon>mdi-delete</v-icon></v-btn>
+                        </v-list-item-action>
+                      </v-list-item>
+                    </v-list>
+                    <v-text-field v-model="newReport.title" label="New Report Title"></v-text-field>
+                    <v-text-field v-model="newReport.date" label="New Report Date"></v-text-field>
+                    <v-btn @click="addReport" color="secondary">Add Report</v-btn>
+                    
+                    <h3>Tasks</h3>
+                    <v-list>
+                      <v-list-item v-for="(task, index) in currentClient.tasks" :key="index">
+                        <v-list-item-content>
+                          <v-list-item-title>{{ task.title }}</v-list-item-title>
+                          <v-list-item-subtitle>{{ task.dueDate }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-list-item-action>
+                          <v-btn icon @click="removeTask(index)"><v-icon>mdi-delete</v-icon></v-btn>
+                        </v-list-item-action>
+                      </v-list-item>
+                    </v-list>
+                    <v-text-field v-model="newTask.title" label="New Task Title"></v-text-field>
+                    <v-text-field v-model="newTask.dueDate" label="New Task Due Date"></v-text-field>
+                    <v-btn @click="addTask" color="secondary">Add Task</v-btn>
+                    
+                    <h3>Contracts</h3>
+                    <v-list>
+                      <v-list-item v-for="(contract, index) in currentClient.contracts" :key="index">
+                        <v-list-item-content>
+                          <v-list-item-title>{{ contract.title }}</v-list-item-title>
+                          <v-list-item-subtitle>{{ contract.date }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        <v-list-item-action>
+                          <v-btn icon @click="removeContract(index)"><v-icon>mdi-delete</v-icon></v-btn>
+                        </v-list-item-action>
+                      </v-list-item>
+                    </v-list>
+                    <v-text-field v-model="newContract.title" label="New Contract Title"></v-text-field>
+                    <v-text-field v-model="newContract.date" label="New Contract Date"></v-text-field>
+                    <v-btn @click="addContract" color="secondary">Add Contract</v-btn>
+                    
+                    <v-btn type="submit" color="primary" class="mt-4">Save Client</v-btn>
+                  </v-form>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+      `,
+      data() {
+        return {
+          clients: [],
+          currentClient: null,
+          search: '',
+          selectedClient: null,
+          newPhase: '',
+          newReport: { title: '', date: '' },
+          newTask: { title: '', dueDate: '' },
+          newContract: { title: '', date: '' },
+        }
+      },
+      computed: {
+        filteredClients() {
+          return this.clients.filter(client => 
+            client.name.toLowerCase().includes(this.search.toLowerCase())
+          )
+        },
+      },
+      methods: {
+        selectClient(client) {
+          this.currentClient = { ...client }
+        },
+        newClient() {
+          this.currentClient = {
+            name: '',
+            email: '',
+            phone: '',
+            address: '',
+            company: '',
+            phases: [],
+            reports: [],
+            tasks: [],
+            contracts: [],
+          }
+        },
+        saveClient() {
+          const index = this.clients.findIndex(c => c.name === this.currentClient.name)
+          if (index !== -1) {
+            this.clients.splice(index, 1, this.currentClient)
+          } else {
+            this.clients.push(this.currentClient)
+          }
+          this.currentClient = null
+        },
+        deleteClient() {
+          const index = this.clients.findIndex(c => c.name === this.currentClient.name)
+          if (index !== -1) {
+            this.clients.splice(index, 1)
+            this.currentClient = null
+          }
+        },
+        addPhase() {
+          if (this.newPhase.trim()) {
+            this.currentClient.phases.push(this.newPhase.trim())
+            this.newPhase = ''
+          }
+        },
+        removePhase(index) {
+          this.currentClient.phases.splice(index, 1)
+        },
+        addReport() {
+          if (this.newReport.title && this.newReport.date) {
+            this.currentClient.reports.push({ ...this.newReport })
+            this.newReport = { title: '', date: '' }
+          }
+        },
+        removeReport(index) {
+          this.currentClient.reports.splice(index, 1)
+        },
+        addTask() {
+          if (this.newTask.title && this.newTask.dueDate) {
+            this.currentClient.tasks.push({ ...this.newTask })
+            this.newTask = { title: '', dueDate: '' }
+          }
+        },
+        removeTask(index) {
+          this.currentClient.tasks.splice(index, 1)
+        },
+        addContract() {
+          if (this.newContract.title && this.newContract.date) {
+            this.currentClient.contracts.push({ ...this.newContract })
+            this.newContract = { title: '', date: '' }
+          }
+        },
+        removeContract(index) {
+          this.currentClient.contracts.splice(index, 1)
+        },
+      },
+    })
+
+    Vue.component('follow-up-tab', {
+      template: `
+        <div>
+          <h2>Follow-Up</h2>
+          <v-tabs v-model="tab" background-color="primary" dark>
+            <v-tab v-for="phase in phases" :key="phase">{{ phase }}</v-tab>
+          </v-tabs>
+          <v-tabs-items v-model="tab">
+            <v-tab-item v-for="(phase, index) in phases" :key="index">
+              <v-card flat>
+                <v-card-text>
+                  <v-data-table
+                    :headers="headers"
+                    :items="leadsInPhase(phase)"
+                    :search="search"
+                    @click:row="editLead"
+                  >
+                    <template v-slot:top>
+                      <v-text-field
+                        v-model="search"
+                        label="Search"
+                        class="mx-4"
+                      ></v-text-field>
+                    </template>
+                    <template v-slot:item.actions="{ item }">
+                      <v-icon small @click="deleteLead(item)">
+                        mdi-delete
+                      </v-icon>
+                    </template>
+                  </v-data-table>
+                </v-card-text>
+              </v-card>
+            </v-tab-item>
+          </v-tabs-items>
+          <v-dialog v-model="dialog" max-width="500px">
+            <v-card>
+              <v-card-title>
+                <span class="headline">{{ formTitle }}</span>
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-row>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-text-field v-model="editedItem.name" label="Name"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-text-field v-model="editedItem.email" label="Email"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-text-field v-model="editedItem.phone" label="Phone"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-select
+                        v-model="editedItem.phase"
+                        :items="phases"
+                        label="Phase"
+                      ></v-select>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                <v-btn color="blue darken-1" text @click="save">Save</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </div>
+      `,
+      data() {
+        return {
+          tab: null,
+          phases: ['Phase 1', 'Phase 2', 'Phase 3', 'Remarketing', 'All Leads'],
+          search: '',
+          headers: [
+            { text: 'Name', value: 'name' },
+            { text: 'Email', value: 'email' },
+            { text: 'Phone', value: 'phone' },
+            { text: 'Phase', value: 'phase' },
+            { text: 'Actions', value: 'actions', sortable: false },
+          ],
+          leads: [],
+          dialog: false,
+          editedIndex: -1,
+          editedItem: {
+            name: '',
+            email: '',
+            phone: '',
+            phase: '',
+          },
+          defaultItem: {
+            name: '',
+            email: '',
+            phone: '',
+            phase: '',
+          },
+        }
+      },
+      computed: {
+        formTitle() {
+          return this.editedIndex === -1 ? 'New Lead' : 'Edit Lead'
+        },
+      },
+      methods: {
+        leadsInPhase(phase) {
+          if (phase === 'All Leads') {
+            return this.leads
+          }
+          return this.leads.filter(lead => lead.phase === phase)
+        },
+        editLead(item) {
+          this.editedIndex = this.leads.indexOf(item)
+          this.editedItem = Object.assign({}, item)
+          this.dialog = true
+        },
+        deleteLead(item) {
+          const index = this.leads.indexOf(item)
+          confirm('Are you sure you want to delete this lead?') && this.leads.splice(index, 1)
+        },
+        close() {
+          this.dialog = false
+          this.$nextTick(() => {
+            this.editedItem = Object.assign({}, this.defaultItem)
+            this.editedIndex = -1
+          })
+        },
+        save() {
+          if (this.editedIndex > -1) {
+            Object.assign(this.leads[this.editedIndex], this.editedItem)
+          } else {
+            this.leads.push(this.editedItem)
+          }
+          this.close()
+        },
+      },
+    })
+
+    Vue.component('crm-tab', {
+      template: `
+        <div>
+          <h2>CRM</h2>
+          <v-card class="mb-4">
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" sm="3">
+                  <v-card>
+                    <v-card-text>
+                      <div class="text-h6">Total Companies</div>
+                      <div class="text-h4">{{ totalCompanies }}</div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+                <v-col cols="12" sm="3">
+                  <v-card>
+                    <v-card-text>
+                      <div class="text-h6">Churned Companies</div>
+                      <div class="text-h4">{{ churnedCompanies }}</div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+                <v-col cols="12" sm="3">
+                  <v-card>
+                    <v-card-text>
+                      <div class="text-h6">Churn Rate</div>
+                      <div class="text-h4">{{ churnRate }}%</div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+                <v-col cols="12" sm="3">
+                  <v-card>
+                    <v-card-text>
+                      <div class="text-h6">New Companies</div>
+                      <div class="text-h4">{{ newCompanies }}</div>
+                    </v-card-text>
+                  </v-card>
+                </v-col>
+              </v-row>
+            </v-card-text>
+          </v-card>
+          <v-data-table
+            :headers="headers"
+            :items="companies"
+            :search="search"
+            @click:row="editItem"
+          >
+            <template v-slot:top>
+              <v-toolbar flat>
+                <v-text-field
+                  v-model="search"
+                  append-icon="mdi-magnify"
+                  label="Search"
+                  single-line
+                  hide-details
+                ></v-text-field>
+                <v-spacer></v-spacer>
+                <v-dialog v-model="dialog" max-width="500px">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="primary"
+                      dark
+                      class="mb-2"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      New Company
+                    </v-btn>
+                  </template>
+                  <v-card>
+                    <v-card-title>
+                      <span class="headline">{{ formTitle }}</span>
+                    </v-card-title>
+                    <v-card-text>
+                      <v-container>
+                        <v-row>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.name" label="Company name"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.status" label="Status"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.satisfaction" label="Customer Satisfaction"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.contract" label="Contract"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.reports" label="Reports"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.followUp" label="Follow-up Phase"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.team" label="Team Responsible"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.tickets" label="Tickets"></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field v-model="editedItem.investment" label="Investment"></v-text-field>
+                          </v-col>
+                        </v-row>
+                      </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
+                      <v-btn color="blue darken-1" text @click="save">Save</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+                <v-dialog v-model="dialogDelete" max-width="500px">
+                  <v-card>
+                    <v-card-title class="headline">Are you sure you want to delete this item?</v-card-title>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
+                      <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
+                      <v-spacer></v-spacer>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-toolbar>
+            </template>
+            <template v-slot:item.actions="{ item }">
+              <v-icon small class="mr-2" @click="editItem(item)">mdi-pencil</v-icon>
+              <v-icon small @click="deleteItem(item)">mdi-delete</v-icon>
+            </template>
+          </v-data-table>
+        </div>
+      `,
+      data() {
+        return {
+          search: '',
+          dialog: false,
+          dialogDelete: false,
+          headers: [
+            { text: 'Company Name', value: 'name' },
+            { text: 'Status', value: 'status' },
+            { text: 'Customer Satisfaction', value: 'satisfaction' },
+            { text: 'Contract', value: 'contract' },
+            { text: 'Reports', value: 'reports' },
+            { text: 'Follow-up Phase', value: 'followUp' },
+            { text: 'Team Responsible', value: 'team' },
+            { text: 'Tickets', value: 'tickets' },
+            { text: 'Investment', value: 'investment' },
+            { text: 'Actions', value: 'actions', sortable: false },
+          ],
+          companies: [],
+          editedIndex: -1,
+          editedItem: {
+            name: '',
+            status: '',
+            satisfaction: '',
+            contract: '',
+            reports: '',
+            followUp: '',
+            team: '',
+            tickets: '',
+            investment: '',
+          },
+          defaultItem: {
+            name: '',
+            status: '',
+            satisfaction: '',
+            contract: '',
+            reports: '',
+            followUp: '',
+            team: '',
+            tickets: '',
+            investment: '',
+          },
+        }
+      },
+      computed: {
+        formTitle() {
+          return this.editedIndex === -1 ? 'New Company' : 'Edit Company'
+        },
+        totalCompanies() {
+          return this.companies.length
+        },
+        churnedCompanies() {
+          return this.companies.filter(company => company.status === 'Churned').length
+        },
+        churnRate() {
+          return this.totalCompanies ? ((this.churnedCompanies / this.totalCompanies) * 100).toFixed(2) : 0
+        },
+        newCompanies() {
+          return this.companies.filter(company => company.status === 'New').length
+        },
+      },
+      methods: {
+        editItem(item) {
+          this.editedIndex = this.companies.indexOf(item)
+          this.editedItem = Object.assign({}, item)
+          this.dialog = true
+        },
+        deleteItem(item) {
+          this.editedIndex = this.companies.indexOf(item)
+          this.editedItem = Object.assign({}, item)
+          this.dialogDelete = true
+        },
+        deleteItemConfirm() {
+          this.companies.splice(this.editedIndex, 1)
+          this.closeDelete()
+        },
+        close() {
+          this.dialog = false
+          this.$nextTick(() => {
+            this.editedItem = Object.assign({}, this.defaultItem)
+            this.editedIndex = -1
+          })
+        },
+        closeDelete() {
+          this.dialogDelete = false
+        },
+        save() {
+          if (this.editedIndex > -1) {
+            Object.assign(this.companies[this.editedIndex], this.editedItem)
+          } else {
+            this.companies.push(this.editedItem)
+          }
+          this.close()
+        },
+      },
+    })
+
+    Vue.component('finance-tab', {
+      template: `
+        <div>
+          <h2>Finance</h2>
+          <v-tabs v-model="tab" background-color="primary" dark>
+            <v-tab>Balance Sheet</v-tab>
+            <v-tab>Profit & Loss Statement</v-tab>
+            <v-tab>Accounts Payable</v-tab>
+            <v-tab>Accounts Receivable</v-tab>
+            <v-tab>Services</v-tab>
+          </v-tabs>
+          <v-tabs-items v-model="tab">
+            <v-tab-item>
+              <balance-sheet></balance-sheet>
+            </v-tab-item>
+            <v-tab-item>
+              <profit-loss></profit-loss>
+            </v-tab-item>
+            <v-tab-item>
+              <accounts-payable></accounts-payable>
+            </v-tab-item>
+            <v-tab-item>
+              <accounts-receivable></accounts-receivable>
+            </v-tab-item>
+            <v-tab-item>
+              <services></services>
+            </v-tab-item>
+          </v-tabs-items>
+        </div>
+      `,
+      data() {
+        return {
+          tab: null,
+        }
+      },
+    })
+
+    Vue.component('balance-sheet', {
+      template: `<div>Balance Sheet Component</div>`
+    })
+
+    Vue.component('profit-loss', {
+      template: `<div>Profit & Loss Statement Component</div>`
+    })
+
+    Vue.component('accounts-payable', {
+      template: `<div>Accounts Payable Component</div>`
+    })
+
+    Vue.component('accounts-receivable', {
+      template: `<div>Accounts Receivable Component</div>`
+    })
+
+    Vue.component('services', {
+      template: `<div>Services Component</div>`
+    })
+
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: {
+        drawer: false,
+        currentTab: 'tasks',
+        menuItems: [
+          { title: 'Tasks', icon: 'mdi-calendar', tab: 'tasks' },
+          { title: 'Clients', icon: 'mdi-account-group', tab: 'clients' },
+          { title: 'Follow-Up', icon: 'mdi-clipboard-check', tab: 'follow-up' },
+          { title: 'CRM', icon: 'mdi-chart-bar', tab: 'crm' },
+          { title: 'Finance', icon: 'mdi-cash', tab: 'finance' },
+        ],
+      },
+      computed: {
+        currentTabComponent() {
+          return this.currentTab + '-tab'
+        },
+      },
+    })
+  </script>
+</body>
+</html>
