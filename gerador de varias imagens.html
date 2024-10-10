@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Fotos Ultra-Realistas com Inteligência Artificial</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #FFFFFF;
+            text-align: center;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+        }
+        h1 {
+            color: #FFFFFF;
+        }
+        .grid-container {
+            display: grid;
+            gap: 10px;
+        }
+        .grid-item {
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            border-radius: 16px;
+        }
+        .grid-item.quadrado {
+            padding-top: 100%; /* Proporção 1:1 */
+        }
+        .grid-item.largo {
+            padding-top: 66.66%; /* Proporção 3:2 */
+        }
+        .grid-item.retrato {
+            padding-top: 150%; /* Proporção 2:3 */
+        }
+        .grid-item img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            margin: 0;
+            padding: 0;
+            border-radius: 16px;
+            max-width: 100%;
+        }
+        .generate-container {
+            margin: 20px 0;
+        }
+        .generate-input {
+            padding: 12px;
+            width: 320px;
+            margin-right: 10px;
+            font-size: 18px;
+            border: none;
+            background-color: #333333;
+            color: #FFFFFF;
+            outline: none;
+            border-radius: 16px;
+        }
+        .generate-button {
+            background-color: #007bcc;
+            color: white;
+            padding: 12px 25px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 16px;
+        }
+        .ratio-button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .ratio-button {
+            background-color: #333333;
+            color: white;
+            padding: 12px 25px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            border-radius: 16px;
+        }
+        .grid-quadrado {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+        }
+        .grid-largo {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(6, 1fr);
+        }
+        .grid-retrato {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+        * {
+            outline: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gerar Fotos Ultra-Realistas com IA - Estilo Midjourney</h1>
+        <form method="GET" action="javascript:void(0);" id="generateForm">
+            <div class="generate-container">
+                <input class="generate-input" type="text" name="prompt" id="prompt" placeholder="Digite seu prompt aqui">
+                <button class="generate-button" type="button" onclick="generateImages()">Gerar Fotos</button>
+            </div>
+        </form>
+        <div class="ratio-button-container">
+            <button class="ratio-button" onclick="setRatio('quadrado')">Quadrado</button>
+            <button class="ratio-button" onclick="setRatio('largo')">Largo</button>
+            <button class="ratio-button" onclick="setRatio('retrato')">Retrato</button>
+        </div>
+        <div class="grid-container grid-quadrado" id="imageGrid">
+            <!-- Imagens de espaço reservado -->
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+            <div class="grid-item quadrado"></div>
+        </div>
+        <div class="scroll-images" id="scrollImages"></div>
+    </div>
+    <script>
+        let pagina = 1;
+        let prompt = '';
+        let proporcao = 'quadrado';
+
+        function setRatio(novaProporcao) {
+            proporcao = novaProporcao;
+            const gridImagens = document.getElementById('imageGrid');
+            gridImagens.classList.remove('grid-quadrado', 'grid-largo', 'grid-retrato');
+
+            if (proporcao === 'quadrado') {
+                gridImagens.classList.add('grid-quadrado');
+                gerarEspacosReservados(4, 4);
+            } else if (proporcao === 'largo') {
+                gridImagens.classList.add('grid-largo');
+                gerarEspacosReservados(2, 6);
+            } else if (proporcao === 'retrato') {
+                gridImagens.classList.add('grid-retrato');
+                gerarEspacosReservados(4, 3);
+            }
+        }
+
+        function generateImages() {
+            prompt = document.getElementById('prompt').value;
+            pagina = 1;
+            if (prompt) {
+                document.getElementById('imageGrid').innerHTML = '';
+                carregarMaisImagens();
+            }
+        }
+
+        function carregarMaisImagens() {
+            if (prompt) {
+                const quantidadeCaixas = proporcao === 'quadrado' ? 16 : proporcao === 'largo' ? 12 : 12;
+
+                for (let i = 1; i <= quantidadeCaixas; i++) {
+                    const containerImagem = document.createElement('div');
+                    containerImagem.className = `grid-item ${proporcao}`;
+                    
+                    const img = document.createElement('img');
+                    img.src = `foto${pagina * quantidadeCaixas + i}.jpg`;
+                    img.alt = `Foto gerada por IA ${pagina * quantidadeCaixas + i} no estilo Midjourney de ${prompt.toLowerCase()}`;
+                    img.style.maxWidth = '100%';
+                    
+                    containerImagem.appendChild(img);
+                    document.getElementById('imageGrid').appendChild(containerImagem);
+                }
+                pagina++;
+            }
+        }
+
+        function gerarEspacosReservados(colunas, linhas) {
+            document.getElementById('imageGrid').innerHTML = '';
+            for (let i = 0; i < colunas * linhas; i++) {
+                const espacoReservado = document.createElement('div');
+                espacoReservado.className = `grid-item ${proporcao}`;
+                document.getElementById('imageGrid').appendChild(espacoReservado);
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 2) {
+                carregarMaisImagens();
+            }
+        });
+
+        // Inicializar com espaços reservados padrão
+        setRatio('quadrado');
+    </script>
+</body>
+</html>

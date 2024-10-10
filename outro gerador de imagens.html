@@ -1,0 +1,636 @@
+<html><head><base href="https://imagenai.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ImagenAI: Gerador de Arte Visual Inteligente | imagenai.com</title>
+<meta name="description" content="ImagenAI é um gerador de arte visual inteligente que cria imagens únicas baseadas em prompts positivos e negativos. Experimente diversos estilos e qualidades de geração.">
+<meta name="keywords" content="ImagenAI, gerador de imagens, arte visual, inteligência artificial, prompts, estilos artísticos">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #0f172a;
+    background-image: 
+      radial-gradient(at 47% 33%, hsl(162.00, 77%, 40%) 0, transparent 59%), 
+      radial-gradient(at 82% 65%, hsl(218.00, 39%, 11%) 0, transparent 55%);
+    color: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .container {
+    background-color: rgba(30, 41, 59, 0.8);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 900px;
+    width: 100%;
+    backdrop-filter: blur(10px);
+  }
+  h1 {
+    color: #f1f5f9;
+    margin-bottom: 2rem;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+  }
+  h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+    border-radius: 2px;
+  }
+  .prompt-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .option-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .option-group label {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #94a3b8;
+    font-weight: 600;
+    text-align: left;
+  }
+  textarea {
+    width: 100%;
+    height: 100px;
+    padding: 0.75rem;
+    border: 2px solid #334155;
+    border-radius: 12px;
+    background-color: #1e293b;
+    color: #f1f5f9;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    resize: vertical;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+  }
+  select, input[type="number"], #positivePrompt, #negativePrompt {
+    padding: 0.75rem;
+    border: 2px solid #334155;
+    border-radius: 12px;
+    background-color: #1e293b;
+    color: #f1f5f9;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  select:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3);
+  }
+  #generateBtn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+    width: 100%;
+    margin-bottom: 2rem;
+  }
+  #generateBtn:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+  }
+  #generateBtn:active {
+    transform: translateY(0);
+  }
+  #imageContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+  .imageWrapper {
+    background-color: #1e293b;
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+  .imageWrapper:hover {
+    transform: translateY(-5px);
+  }
+  .generatedImage {
+    border-radius: 10px;
+    width: 100%;
+    height: auto;
+  }
+  .imageActions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  .imageAction {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex: 1;
+    margin: 0 0.5rem;
+  }
+  .imageAction:hover {
+    background-color: #2563eb;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+  .modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+  }
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+  .close:hover,
+  .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .loading {
+    width: 100%;
+    height: 100%;
+    background-color: #2563eb;
+    border-radius: 10px;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>ImagenAI: Gerador de Arte Visual Inteligente</h1>
+    <div class="prompt-inputs">
+      <div class="option-group">
+        <label for="positivePrompt">Prompt Positivo:</label>
+        <textarea id="positivePrompt" placeholder="Elementos a incluir..."></textarea>
+      </div>
+      <div class="option-group">
+        <label for="negativePrompt">Prompt Negativo:</label>
+        <textarea id="negativePrompt" placeholder="Elementos a evitar..."></textarea>
+      </div>
+    </div>
+    <div class="options">
+      <div class="option-group">
+        <label for="dimensionSelect">Dimensões:</label>
+        <select id="dimensionSelect">
+          <option value="1:1">1:1 (Quadrada)</option>
+          <option value="4:3">4:3</option>
+          <option value="16:9">16:9</option>
+          <option value="3:4">3:4</option>
+          <option value="9:16">9:16</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label for="sizeSelect">Tamanho:</label>
+        <select id="sizeSelect">
+          <option value="small">Pequena</option>
+          <option value="medium" selected>Média</option>
+          <option value="large">Grande</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label for="styleSelect" title="O estilo afeta o tempo de geração e a aparência final da imagem">Estilo:</label>
+        <select id="styleSelect" title="Estilos mais complexos podem levar mais tempo para gerar">
+          <option value="ai_escolha">AI Escolhe o Melhor</option>
+          <option value="leonardo">Leonardo.ai</option>
+          <option value="midjourney">Midjourney</option>
+          <option value="realista">Realista</option>
+          <option value="cartoon">Cartoon</option>
+          <option value="pintura_a_oleo">Pintura a Óleo</option>
+          <option value="aquarela">Aquarela</option>
+          <option value="pixel_art">Pixel Art</option>
+          <option value="anime">Anime</option>
+          <option value="3d">3D Render</option>
+          <option value="baixo_poligono">Baixo Polígono</option>
+          <option value="surrealista">Surrealista</option>
+          <option value="minimalista">Minimalista</option>
+          <option value="impressionista">Impressionista</option>
+          <option value="pop_art">Pop Art</option>
+          <option value="art_nouveau">Art Nouveau</option>
+          <option value="cyberpunk">Cyberpunk</option>
+          <option value="steampunk">Steampunk</option>
+          <option value="art_deco">Art Deco</option>
+          <option value="grafite">Grafite</option>
+          <option value="cubismo">Cubismo</option>
+          <option value="pontilhismo">Pontilhismo</option>
+          <option value="abstrato">Abstrato</option>
+          <option value="expressionista">Expressionista</option>
+          <option value="art_brut">Art Brut</option>
+          <option value="bauhaus">Bauhaus</option>
+          <option value="dadaismo">Dadaísmo</option>
+          <option value="fauvismo">Fauvismo</option>
+          <option value="futurismo">Futurismo</option>
+          <option value="hiper_realismo">Hiper-realismo</option>
+          <option value="naive">Arte Naïve</option>
+          <option value="op_art">Op Art</option>
+          <option value="psicodelico">Psicodélico</option>
+          <option value="renascentista">Renascentista</option>
+          <option value="rococó">Rococó</option>
+          <option value="barroco">Barroco</option>
+          <option value="romantismo">Romantismo</option>
+          <option value="simbolismo">Simbolismo</option>
+          <option value="vaporwave">Vaporwave</option>
+          <option value="ukiyo_e">Ukiyo-e</option>
+          <option value="glitch_art">Glitch Art</option>
+          <option value="bizantino">Bizantino</option>
+          <option value="maneirismo">Maneirismo</option>
+          <option value="neoclassicismo">Neoclassicismo</option>
+          <option value="pré_rafaelita">Pré-Rafaelita</option>
+          <option value="brutalismo">Brutalismo</option>
+          <option value="construtivismo">Construtivismo</option>
+          <option value="suprematismo">Suprematismo</option>
+          <option value="neoplasticismo">Neoplasticismo</option>
+          <option value="arte_cinética">Arte Cinética</option>
+          <option value="pop_surrealismo">Pop Surrealismo</option>
+          <option value="gótico">Gótico</option>
+          <option value="lowbrow">Lowbrow</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label for="qualitySelect" title="Qualidade mais alta requer mais 'treinamento' e leva mais tempo">Qualidade:</label>
+        <select id="qualitySelect" title="Escolha entre velocidade (Rascunho) e qualidade (Aprimorada)">
+          <option value="draft">Rascunho</option>
+          <option value="standard" selected>Padrão</option>
+          <option value="enhanced">Aprimorada</option>
+        </select>
+      </div>
+      <div class="option-group">
+        <label for="quantityInput">Quantidade:</label>
+        <input type="number" id="quantityInput" min="1" max="9" value="1" title="Quantidade de imagens a serem geradas (1-9)">
+      </div>
+    </div>
+    <button id="generateBtn">Gerar Imagens</button>
+    <div id="imageContainer"></div>
+  </div>
+
+  <div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+  </div>
+
+  <script>
+    async function loadImageWithRetry(src, fallbackSrc, maxRetries = 3) {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const response = await fetch(src);
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return src;
+        } catch (error) {
+          console.warn(`Attempt ${i + 1} failed to load image. Error: ${error.message}. Retrying...`);
+          if (i === maxRetries - 1) return fallbackSrc;
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+      return fallbackSrc;
+    }
+
+    const styleParams = {
+      leonardo: 'leonardo',
+      midjourney: 'midjourney',
+      realista: 'sharpen=2&contrast=1.2&saturation=1.1',
+      cartoon: 'cartoon=2&brightness=1.1',
+      pintura_a_oleo: 'oil_paint=3&contrast=1.3',
+      aquarela: 'watercolor=2&brightness=1.05',
+      pixel_art: 'pixelate=8&saturation=1.2',
+      anime: 'anime=2&saturation=1.3&contrast=1.1',
+      '3d': 'render3d=3&sharpen=1&contrast=1.2',
+      baixo_poligono: 'lowpoly=4&saturation=1.1',
+      surrealista: 'surreal=2&hue_rotate=15&contrast=1.2',
+      minimalista: 'minimal=2&desaturate=0.2&contrast=1.1',
+      impressionista: 'impressionist=3&brightness=1.1&saturation=1.2',
+      pop_art: 'pop_art=3&saturation=1.5&contrast=1.3',
+    };
+
+    function getStylizedImageUrl(width, height, style, positivePrompt, negativePrompt) {
+      if (style === 'ai_escolha') {
+        style = selectAIStyle(positivePrompt, negativePrompt);
+      }
+      
+      const seed = Math.floor(Math.random() * 1000000);
+      const promptParam = encodeURIComponent(`${positivePrompt} ${negativePrompt}`);
+      const styleParam = styleParams[style] || '';
+      
+      const imageUrl = `https://picsum.photos/seed/${seed}/${width}/${height}?${styleParam}&prompt=${promptParam}`;
+      const fallbackUrl = `https://via.placeholder.com/${width}x${height}?text=Image+Generation+Failed`;
+      
+      return { primaryUrl: imageUrl, fallbackUrl: fallbackUrl };
+    }
+
+    async function generateImages(placeholders, index, width, height, style, positive, negative, quality) {
+      const generationTime = getGenerationTime(style, quality);
+      await new Promise(resolve => setTimeout(resolve, generationTime));
+
+      const maxRetries = 3;
+      let retryCount = 0;
+
+      while (retryCount < maxRetries) {
+        try {
+          const { primaryUrl, fallbackUrl } = getStylizedImageUrl(width, height, style, positive, negative);
+          const finalImageUrl = await loadImageWithRetry(primaryUrl, fallbackUrl);
+          
+          const imgElement = createImageElement(
+            finalImageUrl, 
+            `Imagem ${index + 1} gerada com base no prompt positivo: ${positive}, negativo: ${negative}, estilo: ${style}, qualidade: ${quality}`,
+            width,
+            height
+          );
+          placeholders[index].parentNode.replaceChild(imgElement, placeholders[index]);
+          break;
+        } catch (error) {
+          console.error(`Error generating image (attempt ${retryCount + 1}):`, error);
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            console.error('Failed to generate image after maximum retries');
+            const errorImgElement = createImageElement(
+              FALLBACK_IMAGE_URL,
+              `Error generating image ${index + 1}`,
+              width,
+              height
+            );
+            placeholders[index].parentNode.replaceChild(errorImgElement, placeholders[index]);
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          }
+        }
+      }
+    }
+
+    const generateBtn = document.getElementById('generateBtn');
+    const positivePrompt = document.getElementById('positivePrompt');
+    const negativePrompt = document.getElementById('negativePrompt');
+    const imageContainer = document.getElementById('imageContainer');
+    const dimensionSelect = document.getElementById('dimensionSelect');
+    const sizeSelect = document.getElementById('sizeSelect');
+    const styleSelect = document.getElementById('styleSelect');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const quantityInput = document.getElementById('quantityInput');
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const closeModal = document.getElementsByClassName('close')[0];
+    const FALLBACK_IMAGE_URL = 'https://via.placeholder.com/512x512?text=Image+Not+Available';
+
+    function getDimensions(dimension, size) {
+      const sizes = {
+        small: { width: 256, height: 256 },
+        medium: { width: 512, height: 512 },
+        large: { width: 1024, height: 1024 }
+      };
+
+      let baseSize = sizes[size];
+      let [width, height] = dimension.split(':').map(Number);
+
+      if (width > height) {
+        return {
+          width: baseSize.width,
+          height: Math.round(baseSize.width * (height / width))
+        };
+      } else {
+        return {
+          width: Math.round(baseSize.height * (width / height)),
+          height: baseSize.height
+        };
+      }
+    }
+
+    function createImagePlaceholder() {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'imageWrapper';
+      wrapper.innerHTML = `
+        <div class="placeholderSVG">
+          <div class="loading"></div>
+        </div>
+      `;
+      return wrapper;
+    }
+
+    function createImageElement(src, alt, width, height) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'imageWrapper';
+
+      const img = document.createElement('img');
+      img.loading = "lazy";
+      img.src = src;
+      img.alt = alt;
+      img.className = 'generatedImage';
+      img.width = width;
+      img.height = height;
+
+      img.onerror = function() {
+        this.onerror = null;
+        this.src = FALLBACK_IMAGE_URL;
+        this.alt = 'Image not available';
+      };
+
+      const actions = document.createElement('div');
+      actions.className = 'imageActions';
+      actions.innerHTML = `
+        <button class="imageAction openBtn">Visualizar</button>
+        <button class="imageAction downloadBtn">Baixar</button>
+      `;
+
+      wrapper.appendChild(img);
+      wrapper.appendChild(actions);
+
+      wrapper.querySelector('.openBtn').addEventListener('click', () => openImage(src));
+      wrapper.querySelector('.downloadBtn').addEventListener('click', () => downloadImage(src, alt));
+
+      return wrapper;
+    }
+
+    function calculateModalImageDimensions(img) {
+      const viewportWidth = window.innerWidth * 0.9;
+      const viewportHeight = window.innerHeight * 0.9;
+      const imageAspectRatio = img.naturalWidth / img.naturalHeight;
+      const viewportAspectRatio = viewportWidth / viewportHeight;
+
+      let width, height;
+
+      if (imageAspectRatio > viewportAspectRatio) {
+        width = viewportWidth;
+        height = width / imageAspectRatio;
+      } else {
+        height = viewportHeight;
+        width = height * imageAspectRatio;
+      }
+
+      return { width, height };
+    }
+
+    function openImage(src) {
+      modal.style.display = "block";
+      modalImg.src = src;
+      
+      modalImg.onload = function() {
+        const { width, height } = calculateModalImageDimensions(this);
+        this.style.width = `${width}px`;
+        this.style.height = `${height}px`;
+      };
+    }
+
+    function downloadImage(src, alt) {
+      fetch(src)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${alt.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Erro ao fazer o download da imagem:', error);
+          alert('Ocorreu um erro ao fazer o download da imagem. Por favor, tente novamente.');
+        });
+    }
+
+    generateBtn.addEventListener('click', async () => {
+      const positive = positivePrompt.value;
+      const negative = negativePrompt.value;
+      if (!positive && !negative) {
+        alert('Por favor, preencha pelo menos um dos campos de prompt.');
+        return;
+      }
+
+      const dimension = dimensionSelect.value;
+      const size = sizeSelect.value;
+      const style = styleSelect.value === 'ai_escolha' ? 'ai_escolha' : styleSelect.value;
+      const quality = qualitySelect.value;
+      const quantity = parseInt(quantityInput.value, 10);
+      const { width, height } = getDimensions(dimension, size);
+
+      generateBtn.disabled = true;
+      generateBtn.textContent = 'Gerando...';
+      imageContainer.innerHTML = '';
+
+      const placeholders = [];
+      for (let i = 0; i < quantity; i++) {
+        const placeholder = createImagePlaceholder();
+        imageContainer.appendChild(placeholder);
+        placeholders.push(placeholder);
+      }
+
+      try {
+        const generationPromises = placeholders.map((placeholder, index) =>
+          generateImages(placeholders, index, width, height, style, positive, negative, quality)
+        );
+
+        await Promise.all(generationPromises);
+      } catch (error) {
+        console.error('Erro ao gerar imagem:', error);
+        alert('Ocorreu um erro ao gerar as imagens. Por favor, tente novamente mais tarde.');
+      } finally {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Gerar Imagens';
+      }
+    });
+
+    closeModal.onclick = function() {
+      modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    }
+
+    function getGenerationTime(style, quality) {
+      const baseTime = {
+        draft: 1000,
+        standard: 2000,
+        enhanced: 3000
+      };
+
+      const styleComplexity = {
+        midjourney: 2.0,
+        realista: 1.5,
+        leonardo: 1.6,
+        cartoon: 0.8,
+        pintura_a_oleo: 1.2,
+        aquarela: 1.0,
+        pixel_art: 0.6,
+        anime: 1.3,
+        '3d': 1.7,
+        baixo_poligono: 0.5,
+        surrealista: 1.4,
+        minimalista: 0.7,
+        impressionista: 1.2,
+        pop_art: 1.0,
+      };
+
+      if (style === 'ai_escolha') {
+        return baseTime[quality] * 1.2;
+      }
+
+      return baseTime[quality] * styleComplexity[style];
+    }
+
+    function selectAIStyle(positivePrompt, negativePrompt) {
+      const styles = Object.keys(styleParams);
+      return styles[Math.floor(Math.random() * styles.length)];
+    }
+  </script>
+</body>
+</html>

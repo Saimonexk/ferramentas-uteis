@@ -1,0 +1,174 @@
+<html><head><base href="https://www.mindmapmaker.com/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindMate - Sua Ferramenta de Estudo Inteligente</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f4f8;
+    color: #333;
+  }
+  header {
+    background-color: #3498db;
+    color: white;
+    text-align: center;
+    padding: 1em;
+  }
+  main {
+    max-width: 800px;
+    margin: 2em auto;
+    padding: 2em;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h1 {
+    margin-bottom: 0.5em;
+  }
+  .options {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-top: 1em;
+    margin-bottom: 2em;
+  }
+  .option {
+    background-color: #3498db;
+    color: white;
+    padding: 1em;
+    margin: 0.5em;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .option:hover {
+    background-color: #2980b9;
+  }
+  .upload-area {
+    border: 2px dashed #3498db;
+    border-radius: 8px;
+    padding: 2em;
+    text-align: center;
+    margin-bottom: 2em;
+  }
+  #text-input {
+    width: 100%;
+    height: 150px;
+    margin-bottom: 1em;
+    padding: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>MindMate</h1>
+    <p>Sua Ferramenta de Estudo Inteligente</p>
+    <div class="options">
+      <div class="option" id="mind-map">Criar Mapas Mentais</div>
+      <div class="option" id="flash-cards">Criar Cartões Flash</div>
+      <div class="option" id="questions">Gerar Perguntas</div>
+    </div>
+  </header>
+  
+  <main>
+    <div class="upload-area" id="drop-area">
+      <p>Arraste e solte seu arquivo PDF aqui ou clique para selecionar</p>
+      <input type="file" id="file-input" accept=".pdf" style="display: none;">
+    </div>
+    
+    <textarea id="text-input" placeholder="Ou cole seu texto aqui..."></textarea>
+    
+    <div id="output-area"></div>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileInput = document.getElementById('file-input');
+    const textInput = document.getElementById('text-input');
+    const mindMapBtn = document.getElementById('mind-map');
+    const flashCardsBtn = document.getElementById('flash-cards');
+    const questionsBtn = document.getElementById('questions');
+    const outputArea = document.getElementById('output-area');
+
+    dropArea.addEventListener('click', () => fileInput.click());
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = '#e8f4fc';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.style.backgroundColor = 'transparent';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.style.backgroundColor = 'transparent';
+      const file = e.dataTransfer.files[0];
+      if (file.type === 'application/pdf') {
+        processPDF(file);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file.type === 'application/pdf') {
+        processPDF(file);
+      }
+    });
+
+    function processPDF(file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const typedarray = new Uint8Array(event.target.result);
+        pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            pdf.getPage(i).then(function(page) {
+              page.getTextContent().then(function(textContent) {
+                text += textContent.items.map(item => item.str).join(' ');
+                if (i === pdf.numPages) {
+                  textInput.value = text;
+                }
+              });
+            });
+          }
+        });
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    mindMapBtn.addEventListener('click', () => {
+      if (textInput.value.trim() === '') {
+        alert('Por favor, insira algum texto ou faça upload de um PDF primeiro.');
+        return;
+      }
+      outputArea.innerHTML = '<h2>Mapa Mental</h2><p>Aqui será exibido o mapa mental baseado no texto fornecido.</p>';
+      // Aqui você implementaria a lógica para criar o mapa mental
+    });
+
+    flashCardsBtn.addEventListener('click', () => {
+      if (textInput.value.trim() === '') {
+        alert('Por favor, insira algum texto ou faça upload de um PDF primeiro.');
+        return;
+      }
+      outputArea.innerHTML = '<h2>Cartões Flash</h2><p>Aqui serão exibidos os cartões flash baseados no texto fornecido.</p>';
+      // Aqui você implementaria a lógica para criar os flash cards
+    });
+
+    questionsBtn.addEventListener('click', () => {
+      if (textInput.value.trim() === '') {
+        alert('Por favor, insira algum texto ou faça upload de um PDF primeiro.');
+        return;
+      }
+      outputArea.innerHTML = '<h2>Perguntas Geradas</h2><p>Aqui serão exibidas as perguntas geradas com base no texto fornecido.</p>';
+      // Aqui você implementaria a lógica para gerar as perguntas
+    });
+  </script>
+</body>
+</html>
