@@ -1,0 +1,459 @@
+<html><head><base href="https://websim.ai">
+<title>kreAImages - Gerador de Imagem por IA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+
+  :root {
+    --primary-blue: #007BFF;
+    --secondary-blue: #0056b3;
+    --primary-black: #1A1A1A;
+    --secondary-black: #333333;
+    --accent-blue: #00BFFF;
+  }
+
+  body, html {
+    font-family: 'Poppins', sans-serif;
+    background-color: #111111; /* Carbon black background */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' viewBox='0 0 4 4'%3E%3Cpath fill='%23333333' d='M1 3h1v1H1V3zm2-2h1v1H3V1z'%3E%3C/path%3E%3C/svg%3E");
+    color: var(--primary-blue);
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .header {
+    background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+    color: var(--primary-black);
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    font-family: 'Audiowide', cursive;
+    margin: 0;
+    font-size: 3.5em;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+  .subtitle {
+    color: var(--secondary-black);
+    font-size: 1.2em;
+    margin-top: 10px;
+    font-weight: 700;
+    text-align: center;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .container {
+    flex: 1;
+    display: flex;
+    padding: 20px;
+  }
+  .sidebar {
+    background-color: var(--secondary-black);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,123,255,0.1);
+    width: 320px;
+    margin-right: 20px;
+  }
+  #imageForm {
+    display: flex;
+    flex-direction: column;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--primary-blue);
+    font-weight: 600;
+  }
+  input[type="text"], select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 2px solid var(--primary-blue);
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: var(--primary-black);
+    color: var(--primary-blue);
+  }
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 300px;
+  }
+  input[type="text"]:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(0,191,255,0.2);
+  }
+  select {
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007BFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px top 50%;
+    background-size: 12px auto;
+    padding-right: 45px; 
+  }
+  button {
+    background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+    color: #FFFFFF;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: 600;
+    display: block;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  button:hover {
+    background: linear-gradient(45deg, var(--secondary-blue), var(--primary-blue));
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+  }
+  #result {
+    flex: 1;
+    overflow-y: auto;
+  }
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+    padding: 20px;
+  }
+  .image-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%; /* Default to 1:1 ratio, will be adjusted in JS */
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,123,255,0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .image-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .popup-content {
+    background-color: var(--secondary-black);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    position: relative;
+  }
+  .popup-image {
+    max-width: 100%;
+    max-height: 80vh;
+    display: block;
+    margin: 0 auto;
+  }
+  .popup-buttons {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+  }
+  .popup-button {
+    background-color: var(--primary-blue);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-content">
+    <h1>Ai Imagem PRO @npjunior3d - 2024</h1>
+    <p class="subtitle"><strong>Gerador de Imagem Avançado por Temas e Estilos!</strong></p>
+  </div>
+</div>
+<div class="container">
+  <div class="sidebar">
+    <form id="imageForm" method="GET" action="https://websim.ai">
+      <label for="prompt">Descrição da Imagem:</label>
+      <textarea id="prompt" name="prompt" required="" placeholder="Descreva a imagem que você quer gerar"></textarea>
+      
+      <label for="style">Estilo da Imagem:</label>
+      <select id="style" name="style">
+        <option value="hyper-realistic">Hiper-Realista</option>
+        <option value="3d">3D</option>
+        <option value="30s-cartoon">Desenho Animado dos Anos 30</option>
+        <option value="70s">Anos 70</option>
+        <option value="80s">Anos 80</option>
+        <option value="abstract">Abstrato</option>
+        <option value="anime">Anime</option>
+        <option value="cartoon">Desenho Animado</option>
+        <option value="cinematic">Cinematográfico</option>
+        <option value="cinematic-horror">Terror Cinematográfico</option>
+        <option value="claymation">Claymation</option>
+        <option value="comic-book">Quadrinhos</option>
+        <option value="creepy">Assustador</option>
+        <option value="cyberpunk">Cyberpunk</option>
+        <option value="glow-in-the-dark">Brilha no Escuro</option>
+        <option value="gta">GTA</option>
+        <option value="mad-max">Mad Max</option>
+        <option value="mangaka">Mangá</option>
+        <option value="midjourney">Midjourney</option>
+        <option value="neon-led-light">Luz Neon LED</option>
+        <option value="oil-painting">Pintura a Óleo</option>
+        <option value="origami">Origami</option>
+        <option value="pixar">Pixar</option>
+        <option value="science-fiction">Ficção Científica</option>
+        <option value="sketch">Esboço</option>
+        <option value="surreal">Surreal</option>
+        <option value="vintage">Vintage</option>
+        <option value="watercolor">Aquarela</option>
+      </select>
+      
+      <label for="camera">Câmera:</label>
+      <select id="camera" name="camera">
+        <option value="none">Nenhuma</option>
+        <option value="dslr">DSLR</option>
+        <option value="mirrorless">Sem Espelho</option>
+        <option value="polaroid">Polaroid</option>
+        <option value="disposable">Descartável</option>
+        <option value="pinhole">Pinhole</option>
+        <option value="large-format">Grande Formato</option>
+        <option value="medium-format">Médio Formato</option>
+        <option value="rangefinder">Telêmetro</option>
+        <option value="point-and-shoot">Compacta</option>
+        <option value="smartphone">Smartphone</option>
+        <option value="action-cam">Câmera de Ação</option>
+        <option value="360-camera">Câmera 360</option>
+        <option value="drone">Câmera de Drone</option>
+        <option value="film">Câmera de Filme</option>
+        <option value="instant">Câmera Instantânea</option>
+        <option value="lomography">Lomografia</option>
+        <option value="toy-camera">Câmera de Brinquedo</option>
+        <option value="vintage-camera">Câmera Vintage</option>
+      </select>
+      
+      <label for="viewpoint">Ponto de Vista:</label>
+      <select id="viewpoint" name="viewpoint">
+        <option value="none">Nenhum</option>
+        <option value="close-up">Close-up</option>
+        <option value="medium-shot">Plano Médio</option>
+        <option value="wide-angle">Grande Angular</option>
+        <option value="aerial">Aérea</option>
+        <option value="birds-eye">Vista de Pássaro</option>
+        <option value="worms-eye">Vista de Verme</option>
+        <option value="first-person">Primeira Pessoa</option>
+        <option value="over-the-shoulder">Por Cima do Ombro</option>
+        <option value="dutch-angle">Ângulo Holandês</option>
+        <option value="panoramic">Panorâmica</option>
+        <option value="fisheye">Olho de Peixe</option>
+        <option value="macro">Macro</option>
+        <option value="telephoto">Teleobjetiva</option>
+      </select>
+      
+      <label for="lighting">Iluminação:</label>
+      <select id="lighting" name="lighting">
+        <option value="none">Nenhuma</option>
+        <option value="natural">Natural</option>
+        <option value="studio">Estúdio</option>
+        <option value="golden-hour">Hora Dourada</option>
+        <option value="blue-hour">Hora Azul</option>
+        <option value="dramatic">Dramática</option>
+        <option value="low-key">Baixa Luz</option>
+        <option value="high-key">Alta Luz</option>
+        <option value="backlit">Contraluz</option>
+        <option value="soft-box">Softbox</option>
+        <option value="ring-light">Ring Light</option>
+        <option value="neon">Neon</option>
+        <option value="candlelight">Luz de Vela</option>
+        <option value="moonlight">Luz da Lua</option>
+        <option value="firelight">Luz de Fogo</option>
+        <option value="strobe">Luz Estroboscópica</option>
+        <option value="harsh-sunlight">Luz Solar Intensa</option>
+        <option value="fluorescent">Luz Fluorescente</option>
+      </select>
+      
+      <label for="aspect-ratio">Proporção da Imagem:</label>
+      <select id="aspect-ratio" name="aspect-ratio">
+        <option value="1:1">1:1 (Quadrado)</option>
+        <option value="4:5">4:5 (Instagram Portrait)</option>
+        <option value="16:9">16:9 (Paisagem)</option>
+        <option value="9:16">9:16 (Retrato)</option>
+      </select>
+      
+      <label for="num-images">Número de Imagens:</label>
+      <select id="num-images" name="num-images">
+        <option value="1">1</option>
+        <option value="4">4</option>
+        <option value="9">9</option>
+        <option value="16">16</option>
+        <option value="20">20</option>
+      </select>
+      
+      <button type="submit">Gerar Imagens</button>
+    </form>
+  </div>
+  
+  <div id="result">
+    <div class="image-grid" id="imageGrid"></div>
+  </div>
+</div>
+
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-content">
+    <img src="" alt="Imagem em alta resolução" class="popup-image" id="popupImage">
+    <div class="popup-buttons">
+      <button class="popup-button" id="zoomInBtn">+</button>
+      <button class="popup-button" id="zoomOutBtn">-</button>
+      <button class="popup-button" id="downloadBtn">Download</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('imageForm');
+  const imageGrid = document.getElementById('imageGrid');
+  const popupOverlay = document.getElementById('popupOverlay');
+  const popupImage = document.getElementById('popupImage');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const aspectRatioSelect = document.getElementById('aspect-ratio');
+  
+  let currentZoom = 1;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    const numImages = parseInt(formData.get('num-images'));
+    const aspectRatio = formData.get('aspect-ratio');
+    const prompt = formData.get('prompt');
+    const style = formData.get('style');
+    const camera = formData.get('camera');
+    const viewpoint = formData.get('viewpoint');
+    const lighting = formData.get('lighting');
+
+    // Limpar grid existente
+    imageGrid.innerHTML = '';
+
+    // Definir padding-bottom baseado na proporção selecionada
+    const [width, height] = aspectRatio.split(':').map(Number);
+    const paddingBottom = (height / width) * 100;
+
+    // Simular geração de imagens baseada nos inputs do usuário
+    for (let i = 0; i < numImages; i++) {
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'image-container';
+      imgContainer.style.paddingBottom = `${paddingBottom}%`;
+
+      const img = document.createElement('img');
+      // Use um serviço de geração de imagens aleatórias que aceita parâmetros
+      img.src = `https://source.unsplash.com/random/${width}x${height}/?${encodeURIComponent(prompt)},${encodeURIComponent(style)}`;
+      img.alt = `Imagem gerada ${i+1}: ${prompt} (${style})`;
+
+      imgContainer.appendChild(img);
+      imageGrid.appendChild(imgContainer);
+
+      // Adicionar evento de clique para abrir o popup
+      imgContainer.addEventListener('click', function() {
+        openPopup(img.src, img.alt);
+      });
+    }
+  });
+
+  function openPopup(imageSrc, imageAlt) {
+    popupImage.src = imageSrc;
+    popupImage.alt = imageAlt;
+    popupOverlay.style.display = 'flex';
+    currentZoom = 1;
+    updateZoom();
+  }
+
+  function closePopup() {
+    popupOverlay.style.display = 'none';
+  }
+
+  function updateZoom() {
+    popupImage.style.transform = `scale(${currentZoom})`;
+  }
+
+  zoomInBtn.addEventListener('click', function() {
+    currentZoom += 0.1;
+    updateZoom();
+  });
+
+  zoomOutBtn.addEventListener('click', function() {
+    currentZoom = Math.max(0.1, currentZoom - 0.1);
+    updateZoom();
+  });
+
+  downloadBtn.addEventListener('click', function() {
+    const link = document.createElement('a');
+    link.href = popupImage.src;
+    link.download = 'imagem_gerada.png';
+    link.click();
+  });
+
+  // Fechar popup ao clicar fora da imagem
+  popupOverlay.addEventListener('click', function(e) {
+    if (e.target === popupOverlay) {
+      closePopup();
+    }
+  });
+
+  // Fechar popup com a tecla ESC
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closePopup();
+    }
+  });
+
+  // Atualizar o grid quando a proporção da imagem for alterada
+  aspectRatioSelect.addEventListener('change', function() {
+    const [width, height] = this.value.split(':').map(Number);
+    const paddingBottom = (height / width) * 100;
+    
+    document.querySelectorAll('.image-container').forEach(container => {
+      container.style.paddingBottom = `${paddingBottom}%`;
+    });
+  });
+});
+</script>
+</body>
+</html>
